@@ -1,5 +1,5 @@
 package com.getcapacitor.plugin.http;
-// YBYB
+
 import static com.getcapacitor.plugin.http.MimeType.APPLICATION_JSON;
 import static com.getcapacitor.plugin.http.MimeType.APPLICATION_VND_API_JSON;
 
