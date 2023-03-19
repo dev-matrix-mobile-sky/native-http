@@ -234,10 +234,15 @@ public class HttpRequestHandler {
             } else {
                 return readStreamAsString(errorStream);
             }
-        } else if (contentType != null && contentType.contains(APPLICATION_JSON.getValue())) {
-            // backward compatibility
-            return parseJSON(readStreamAsString(connection.getInputStream()));
-        } else {
+        }
+        
+        // FIX YB - use responseType from client only (not API method's header contentType )
+        //else if (contentType != null && contentType.contains(APPLICATION_JSON.getValue())) {
+        //    // backward compatibility
+        //    return parseJSON(readStreamAsString(connection.getInputStream()));
+        //}
+        
+        else {
             InputStream stream = connection.getInputStream();
             switch (responseType) {
                 case ARRAY_BUFFER:
