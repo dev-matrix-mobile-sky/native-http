@@ -109,9 +109,11 @@ class HttpRequestHandler {
             return output
         }
 
-        let contentType = (response.allHeaderFields["Content-Type"] as? String ?? "application/default").lowercased();
-
-        if (contentType.contains("application/json") || responseType == .json) {
+        // FIX YB - use responseType from client only (not API method's header contentType )
+        // let contentType = (response.allHeaderFields["Content-Type"] as? String ?? "application/default").lowercased();
+        // if (contentType.contains("application/json") || responseType == .json) {
+        
+        if (responseType == .json) {
             output["data"] = tryParseJson(data);
         } else if (responseType == .arrayBuffer || responseType == .blob) {
             output["data"] = data.base64EncodedString();
