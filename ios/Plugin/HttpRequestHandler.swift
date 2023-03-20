@@ -296,6 +296,22 @@ class HttpRequestHandler {
                 print("File Dest", dest.absoluteString)
 
                 try FilesystemUtils.createDirectoryForFile(dest, true)
+                
+                // ==============================================================
+                // LA FIX
+                // handle file name already exists --> if exist remove all files in destinatio
+                let encodedLink = (dest.path).addingPercentEncoding(withAllowedCharacters: .urlFragmentAllowed)
+                let url = URL(string: encodedLink!)
+
+                if FileManager.default.fileExists(atPath: url!.path) {
+                    try! fileManager.removeItem(atPath: url!.path);
+//                    catch
+//                        call.reject("Unable to download file", "DOWNLOAD", e)
+//                        return
+                }
+                // END LA
+                // ==============================================================
+
 
                 try fileManager.moveItem(at: location, to: dest)
                 call.resolve(["path": dest.absoluteString])
