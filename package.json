@@ -6,6 +6,7 @@
   "module": "dist/esm/index.js",
   "types": "dist/esm/index.d.ts",
   "scripts": {
+    "prepare": "npm run build",
     "build": "npm run clean && tsc && rollup -c rollup.config.js",
     "ios:build": "cd ios && pod install && cd ..",
     "docs": "typedoc src/web.ts src/definitions.ts",
