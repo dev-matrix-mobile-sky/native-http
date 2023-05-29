@@ -4,6 +4,8 @@ import Foundation
 @objc(HttpPlugin) public class HttpPlugin: CAPPlugin {
     var cookieManager: CapacitorCookieManager? = nil
     var capConfig: InstanceConfiguration? = nil
+    //LA ADDED FOR COOKIES FIX - REMOVE MISSESSION FROM FIRST LOGIN SET
+    var loginMizSessionVal:String? = nil;
     
     private func getServerUrl(_ call: CAPPluginCall) -> URL? {
         guard let urlString = call.getString("url") else {
@@ -97,7 +99,10 @@ import Foundation
     @objc func setCookie(_ call: CAPPluginCall) {
         guard let key = call.getString("key") else { return call.reject("Must provide key") }
         guard let value = call.getString("value") else { return call.reject("Must provide value") }
-    
+        //LA ADDED
+        loginMizSessionVal = value;
+        //END LA ADDED
+        
         let url = getServerUrl(call)
         if url != nil {
             cookieManager!.setCookie(url!, key, cookieManager!.encode(value))
@@ -151,8 +156,9 @@ import Foundation
         if url != nil {
             let jar = HTTPCookieStorage.shared
 
+            //LA ADDED RETURN AND DELETE BY VALUE
             let cookie = jar.cookies(for: url!)?.first(where: { (cookie) -> Bool in
-                return cookie.name == key
+                 return cookie.value == loginMizSessionVal
             })
 
             if cookie != nil {
