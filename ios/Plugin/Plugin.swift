@@ -4,7 +4,7 @@ import Foundation
 @objc(HttpPlugin) public class HttpPlugin: CAPPlugin {
     var cookieManager: CapacitorCookieManager? = nil
     var capConfig: InstanceConfiguration? = nil
-    //LA ADDED FOR COOKIES FIX - REMOVE MISSESSION FROM FIRST LOGIN SET
+    //LA ADDED FOR COOKIES FIX - REMOVE MISSESSION FROM FIRST LOGIN SET (for bio send mizSession twice)
     var loginMizSessionVal:String? = nil;
     
     private func getServerUrl(_ call: CAPPluginCall) -> URL? {
