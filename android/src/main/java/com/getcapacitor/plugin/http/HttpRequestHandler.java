@@ -555,13 +555,18 @@ public class HttpRequestHandler {
         return shortFileName;
     }
 
+    /**
+     * get file name from filePath.
+     * support file from content provider, return real file name
+     * */
     @SuppressLint("Range")
     private static String getFileName(String filePath, Context context) {
         String result = null;
 
         Uri fileUri = Uri.parse(filePath);
 
-        if (fileUri.getScheme().equals("content")) { //content provider fileUri
+        /* content provider fileUri */
+        if (fileUri.getScheme().equals("content")) {
             Cursor cursor = context.getContentResolver().query(fileUri, null, null, null, null);
             try {
                 if (cursor != null && cursor.moveToFirst()) {
