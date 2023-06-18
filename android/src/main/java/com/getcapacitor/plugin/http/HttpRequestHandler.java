@@ -3,14 +3,16 @@ package com.getcapacitor.plugin.http;
 import static com.getcapacitor.plugin.http.MimeType.APPLICATION_JSON;
 import static com.getcapacitor.plugin.http.MimeType.APPLICATION_VND_API_JSON;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.database.Cursor;
+import android.net.Uri;
+import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Base64;
-
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
-
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -26,7 +28,6 @@ import java.net.URL;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -170,7 +171,13 @@ public class HttpRequestHandler {
                 URI encodedUri = new URI(uri.getScheme(), uri.getAuthority(), uri.getPath(), urlQuery, uri.getFragment());
                 this.url = encodedUri.toURL();
             } else {
-                String unEncodedUrlString = uri.getScheme() + "://" + uri.getAuthority() + uri.getPath() + ((!urlQuery.equals("")) ? "?" + urlQuery : "") + ((uri.getFragment() != null) ? uri.getFragment() : "");
+                String unEncodedUrlString =
+                    uri.getScheme() +
+                    "://" +
+                    uri.getAuthority() +
+                    uri.getPath() +
+                    ((!urlQuery.equals("")) ? "?" + urlQuery : "") +
+                    ((uri.getFragment() != null) ? uri.getFragment() : "");
                 this.url = new URL(unEncodedUrlString);
             }
 
@@ -241,7 +248,6 @@ public class HttpRequestHandler {
                 return readStreamAsString(errorStream);
             }
         }
-
         // FIX YB - use responseType from client only (not API method's header contentType )
         //else if (contentType != null && contentType.contains(APPLICATION_JSON.getValue())) {
         //    // backward compatibility
@@ -523,7 +529,8 @@ public class HttpRequestHandler {
         CapacitorHttpUrlConnection connection = connectionBuilder.build();
         connection.setDoOutput(true);
 
-        String newShortFileName = getShortFileName(file.getName());
+        String realName = getFileName(filePath, context);
+        String newShortFileName = getShortFileName(realName);
 
         FormUploader builder = new FormUploader(connection.getHttpConnection());
         builder.addFilePart(name, file, data, newShortFileName);
@@ -546,6 +553,35 @@ public class HttpRequestHandler {
         String shortFileName = fileNameWithoutExt.substring(0, fileNameWithoutExtNewLength) + "." + fileExt;
 
         return shortFileName;
+    }
+
+    @SuppressLint("Range")
+    private static String getFileName(String filePath, Context context) {
+        String result = null;
+
+        Uri fileUri = Uri.parse(filePath);
+
+        if (fileUri.getScheme().equals("content")) { //content provider fileUri
+            Cursor cursor = context.getContentResolver().query(fileUri, null, null, null, null);
+            try {
+                if (cursor != null && cursor.moveToFirst()) {
+                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
+                }
+            } finally {
+                cursor.close();
+            }
+        }
+
+        if (result == null) {
+            result = fileUri.getPath();
+            int cut = result.lastIndexOf('/');
+
+            if (cut != -1) {
+                result = result.substring(cut + 1);
+            }
+        }
+
+        return result;
     }
 
     @FunctionalInterface
