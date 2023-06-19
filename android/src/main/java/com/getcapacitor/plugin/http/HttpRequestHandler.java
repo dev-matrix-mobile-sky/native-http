@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.provider.OpenableColumns;
 import android.text.TextUtils;
 import android.util.Base64;
+import android.util.Log;
 import com.getcapacitor.JSArray;
 import com.getcapacitor.JSObject;
 import com.getcapacitor.PluginCall;
@@ -491,6 +492,17 @@ public class HttpRequestHandler {
         };
     }
 
+    private static void copyInputStreamToFile(InputStream inputStream, File file) throws IOException {
+        // append = false
+        try (FileOutputStream outputStream = new FileOutputStream(file, false)) {
+            int read;
+            byte[] bytes = new byte[64];
+            while ((read = inputStream.read(bytes)) != -1) {
+                outputStream.write(bytes, 0, read);
+            }
+        }
+    }
+
     /**
      * Makes an Http Request to upload a file based on the PluginCall parameters
      *
@@ -515,7 +527,23 @@ public class HttpRequestHandler {
 
         URL url = new URL(urlString);
 
-        File file = FilesystemUtils.getFileObject(context, filePath, fileDirectory);
+        File file;
+
+        if (filePath.contains("content://")) { //content provider uri
+            Uri fileUri = Uri.parse(filePath);
+            InputStream contentInputStream = context.getContentResolver().openInputStream(fileUri);
+            String fileName = getFileName(filePath, context);
+
+            String mimeType = context.getContentResolver().getType(fileUri);
+            Log.d("tom0", "********* uploadFile: " + mimeType);
+
+            Log.d("tom0", "uploadFile: " + fileName);
+
+            file = FilesystemUtils.getFileObject(context, fileName, FilesystemUtils.DIRECTORY_CACHE);
+            copyInputStreamToFile(contentInputStream, file); //copy content stream to local file
+        } else { //regular file path
+            file = FilesystemUtils.getFileObject(context, filePath, fileDirectory);
+        }
 
         HttpURLConnectionBuilder connectionBuilder = new HttpURLConnectionBuilder()
             .setUrl(url)
@@ -529,8 +557,7 @@ public class HttpRequestHandler {
         CapacitorHttpUrlConnection connection = connectionBuilder.build();
         connection.setDoOutput(true);
 
-        String realName = getFileName(filePath, context);
-        String newShortFileName = getShortFileName(realName);
+        String newShortFileName = getShortFileName(file.getName());
 
         FormUploader builder = new FormUploader(connection.getHttpConnection());
         builder.addFilePart(name, file, data, newShortFileName);
@@ -558,7 +585,7 @@ public class HttpRequestHandler {
     /**
      * get file name from filePath.
      * support file from content provider, return real file name
-     * */
+     */
     @SuppressLint("Range")
     private static String getFileName(String filePath, Context context) {
         String result = null;
