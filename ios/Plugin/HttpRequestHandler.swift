@@ -207,6 +207,7 @@ class HttpRequestHandler {
         let fileDirectory = call.getString("fileDirectory") ?? "DOCUMENTS"
         let headers = (call.getObject("headers") ?? [:]) as! [String: String]
         let params = (call.getObject("params") ?? [:]) as! [String: Any]
+        let isBase64 = call.getBool("base64", false)
         let body = (call.getObject("data") ?? [:]) as [String: Any]
         let responseType = call.getString("responseType") ?? "text";
         let connectTimeout = call.getDouble("connectTimeout");
@@ -214,10 +215,15 @@ class HttpRequestHandler {
 
         guard let urlString = call.getString("url") else { throw URLError(.badURL) }
         guard let filePath = call.getString("filePath") else { throw URLError(.badURL) }
-
+        
         // SA start
-        //guard let fileUrl = FilesystemUtils.getFileUrl(filePath, fileDirectory) else { throw URLError(.badURL) }
-        let fileUrl = NSURL.fileURL(withPath: filePath, isDirectory: true);
+        var fileUrl:URL!
+
+        if (isBase64){
+            fileUrl = FilesystemUtils.getFileUrl(filePath, fileDirectory) //else { throw URLError(.badURL) }
+        } else {
+            fileUrl = NSURL.fileURL(withPath: filePath, isDirectory: true);
+        }
         // SA end
 
         let request = try! CapacitorHttpRequestBuilder()
