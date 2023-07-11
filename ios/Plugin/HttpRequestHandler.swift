@@ -214,7 +214,11 @@ class HttpRequestHandler {
 
         guard let urlString = call.getString("url") else { throw URLError(.badURL) }
         guard let filePath = call.getString("filePath") else { throw URLError(.badURL) }
-        guard let fileUrl = FilesystemUtils.getFileUrl(filePath, fileDirectory) else { throw URLError(.badURL) }
+
+        // SA start
+        //guard let fileUrl = FilesystemUtils.getFileUrl(filePath, fileDirectory) else { throw URLError(.badURL) }
+        let fileUrl = NSURL.fileURL(withPath: filePath, isDirectory: true);
+        // SA end
 
         let request = try! CapacitorHttpRequestBuilder()
             .setUrl(urlString)
