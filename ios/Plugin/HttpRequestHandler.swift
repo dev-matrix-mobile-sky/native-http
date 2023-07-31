@@ -225,6 +225,29 @@ class HttpRequestHandler {
             fileUrl = NSURL.fileURL(withPath: filePath, isDirectory: true);
         }
         // SA end
+        //file name and extension
+        let filePathPart = fileUrl.absoluteString.split(separator: "/")
+        let fileName = filePathPart[filePathPart.count-1]
+        let fileManager = FileManager.default
+        let fileName_new = getShortFileName(fileName: String( fileName))
+        if(String(fileName) == fileName_new ){
+            // do nothig the current file name is valid
+        }else{ // file name not valid
+            // create new file with oldFile content and new name
+            if let cacheDirectoryURL = fileManager.urls(for: .cachesDirectory, in: .userDomainMask).first {
+                let newFileURL = cacheDirectoryURL.appendingPathComponent(fileName_new)
+                do {
+                    try fileManager.copyItem(at: fileUrl, to: newFileURL)
+                    fileUrl = newFileURL
+                } catch {
+                    // Handle the error if copying fails
+                    print("Error copying file: \(error)")
+                }
+                
+            }
+        }
+
+        
 
         let request = try! CapacitorHttpRequestBuilder()
             .setUrl(urlString)
@@ -253,10 +276,37 @@ class HttpRequestHandler {
             }
             let type = ResponseType(rawValue: responseType) ?? .default
             call.resolve(self.buildResponse(data, response as! HTTPURLResponse, responseType: type))
+            if(String(fileName) != fileName_new ){
+                do {
+                    // After successful upload, delete the copied file from the device
+                    try fileManager.removeItem(at: fileUrl)
+                } catch {
+                    // Handle the error if file deletion fails
+                    print("Error deleting file: \(error)")
+                }
+            }
         }
 
         task.resume()
     }
+
+        public static func getShortFileName(fileName: String) -> String{
+        let maxCharacters = 20 // file name inluding extension must be up to 20 characters
+        let fileOld = fileName.split(separator: ".")// separte file name
+        let maxLength = maxCharacters - (fileOld[1].count + 1)
+        if(fileOld[0].count < maxLength ){
+            // if the file name length is valid no need for changes
+            return fileName
+        }else {
+            // in case file name not valid
+            let Substringtemp = String(fileName.prefix(maxLength - 1))
+            let new_File_name = Substringtemp + "." + fileOld[1]
+            return new_File_name
+            
+        }
+
+    }
+
 
     public static func download(_ call: CAPPluginCall, updateProgress: @escaping ProgressEmitter) throws {
         let method = call.getString("method") ?? "GET"
