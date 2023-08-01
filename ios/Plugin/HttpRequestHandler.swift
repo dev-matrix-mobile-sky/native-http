@@ -194,7 +194,7 @@ class HttpRequestHandler {
                 return
             }
 
-            let type = ResponseType(rawValue: responseType) ?? .default
+            let type = ResponseType(string: responseType) ?? .default
             call.resolve(self.buildResponse(data, response as! HTTPURLResponse, responseType: type))
         }
 
