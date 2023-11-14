@@ -3,6 +3,7 @@
     "allowUnreachableCode": false,
     "declaration": true,
     "esModuleInterop": true,
+    "typeRoots": [ "node_modules/@types/" ],
     "lib": ["dom", "es2017"],
     "module": "esnext",
     "moduleResolution": "node",
