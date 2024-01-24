@@ -457,7 +457,25 @@ public class HttpRequestHandler {
             .setReadTimeout(readTimeout)
             .openConnection();
 
-        ICapacitorHttpUrlConnection connection = connectionBuilder.build();
+      //LH Support Download in Post with request body
+      //ICapacitorHttpUrlConnection connection = connectionBuilder.build();
+      CapacitorHttpUrlConnection connection = connectionBuilder.build();
+      //
+      String httpMethode = method != null ? method.toUpperCase() : call.getString("method", "").toUpperCase();
+
+      boolean isHttpMutate = httpMethode.equals("DELETE") || httpMethode.equals("PATCH") || httpMethode.equals("POST") || httpMethode.equals("PUT");
+
+      // Set HTTP body on a non GET or HEAD request
+      if (isHttpMutate) {
+        JSValue data = new JSValue(call, "data");
+        if (data.getValue() != null) {
+          connection.setDoOutput(true);
+          connection.setRequestBody(call, data);
+        }
+      }
+      connection.connect();
+      //LH END
+            
         InputStream connectionInputStream = connection.getInputStream();
 
         FileOutputStream fileOutputStream = new FileOutputStream(file, false);
