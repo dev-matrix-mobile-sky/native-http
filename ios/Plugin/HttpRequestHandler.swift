@@ -329,6 +329,24 @@ class HttpRequestHandler {
 
         request.setRequestHeaders(headers)
 
+        //LH- Support Download in Post with request body
+        // Set HTTP body on a non GET or HEAD request
+        let isHttpMutate = method == "DELETE" ||
+            method == "PATCH" ||
+            method == "POST" ||
+            method == "PUT";
+        
+        if isHttpMutate {
+            do {
+                let data = call.getObject("data") ?? [:]
+                try request.setRequestBody(data)
+            } catch {
+                call.reject("Error", "DOWNLOAD HTTP", error, [:])
+                return
+            }
+        }
+        //LH END
+
         // Timeouts in iOS are in seconds. So read the value in millis and divide by 1000
         let timeout = (connectTimeout ?? readTimeout ?? 600000.0) / 1000.0;
         request.setTimeout(timeout)
