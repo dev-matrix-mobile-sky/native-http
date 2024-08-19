@@ -567,6 +567,13 @@ public class HttpRequestHandler {
             file = FilesystemUtils.getFileObject(context, filePath, fileDirectory);
         }
 
+        if(headers == null) {
+            headers = new JSObject();
+        }
+        if(params == null) {
+              params = new JSObject();
+        }
+        
         HttpURLConnectionBuilder connectionBuilder = new HttpURLConnectionBuilder()
             .setUrl(url)
             .setMethod(method)
