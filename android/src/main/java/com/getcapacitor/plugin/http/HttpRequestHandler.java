@@ -398,6 +398,10 @@ public class HttpRequestHandler {
 
         boolean isHttpMutate = method.equals("DELETE") || method.equals("PATCH") || method.equals("POST") || method.equals("PUT");
 
+        if(params == null) {
+            params = new JSObject();
+        }
+        
         URL url = new URL(urlString);
         HttpURLConnectionBuilder connectionBuilder = new HttpURLConnectionBuilder()
             .setUrl(url)
