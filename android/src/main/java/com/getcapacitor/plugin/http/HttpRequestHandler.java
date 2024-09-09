@@ -452,6 +452,10 @@ public class HttpRequestHandler {
         final URL url = new URL(urlString);
         final File file = FilesystemUtils.getFileObject(context, filePath, fileDirectory);
 
+        if(params ==  null) {
+            params = new JSObject();
+        }        
+            
         HttpURLConnectionBuilder connectionBuilder = new HttpURLConnectionBuilder()
             .setUrl(url)
             .setMethod(method)
