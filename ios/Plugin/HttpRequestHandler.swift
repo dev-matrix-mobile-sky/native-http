@@ -390,9 +390,30 @@ class HttpRequestHandler {
                 // END LA
                 // ==============================================================
 
+              let message: String = {
+                  guard
+                      let httpResponse = response as? HTTPURLResponse,
+                      let rawValue = httpResponse.allHeaderFields["message"] as? String
+                  else {
+                      return ""
+                  }
 
-                try fileManager.moveItem(at: location, to: dest)
-                call.resolve(["path": dest.absoluteString])
+                  // Treat the string as Latin-1 bytes, then decode as UTF-8
+                  if let data = rawValue.data(using: .isoLatin1),
+                     let fixed = String(data: data, encoding: .utf8) {
+                      return fixed
+                  }
+
+                  return rawValue
+              }()
+
+              try fileManager.moveItem(at: location, to: dest)
+
+              call.resolve([
+                  "path": dest.absoluteString,
+                  "message": message
+              ])
+              
             } catch let e {
                 call.reject("Unable to download file", "DOWNLOAD", e)
                 return
