@@ -454,8 +454,8 @@ public class HttpRequestHandler {
 
         if(params ==  null) {
             params = new JSObject();
-        }        
-            
+        }
+
         HttpURLConnectionBuilder connectionBuilder = new HttpURLConnectionBuilder()
             .setUrl(url)
             .setMethod(method)
@@ -483,12 +483,15 @@ public class HttpRequestHandler {
       }
       connection.connect();
       //LH END
-            
+
         InputStream connectionInputStream = connection.getInputStream();
 
         FileOutputStream fileOutputStream = new FileOutputStream(file, false);
 
         String contentLength = connection.getHeaderField("content-length");
+        String message = connection.getHeaderField("message");
+        message = (message != null) ? message : "";
+
         int bytes = 0;
         int maxBytes = 0;
 
@@ -511,9 +514,11 @@ public class HttpRequestHandler {
         connectionInputStream.close();
         fileOutputStream.close();
 
-        return new JSObject() {
+      String finalMessage = message;
+      return new JSObject() {
             {
                 put("path", file.getAbsolutePath());
+                put("message", finalMessage);
             }
         };
     }
